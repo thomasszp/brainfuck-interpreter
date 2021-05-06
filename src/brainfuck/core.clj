@@ -25,7 +25,7 @@
   "
   [first & rest]
   ;; code goes here
-  nil
+  (str first (apply str rest))
   )
 
 (defmacro bf

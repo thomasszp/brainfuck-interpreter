@@ -19,7 +19,17 @@
   "
   [code]
   ;; Code goes here
-  nil
+  (let [len (count code)]
+    (loop [line 1
+           current 1
+           final []]
+    (if (< current len)
+      (do
+        (if (> current (.indexOf code "\\n" line))
+          (inc line))
+        (let [c (.charAt code current)] (recur line (inc current) (conj final {:symbol c :line line :column current}))))
+      (final))
+    ))
   )
 
 (defn find-matchings
@@ -78,9 +88,31 @@
              datum (data data-pointer 0)]
         (cond 
           ;; Code goes here
-          
           ;; you implement other cases
-          
+          (= symbol \>)
+            (recur data (inc data-pointer) (inc instruction-pointer))
+          (= symbol \<)
+            (recur data (dec data-pointer) (inc instruction-pointer))
+          (= symbol \+)
+            ;(recur (update-in data data-pointer inc-byte) data-pointer (inc instruction-pointer))
+            (recur (inc-byte (data data-pointer)) data-pointer (inc instruction-pointer))
+          (= symbol \-)
+            ;(recur (update-in data data-pointer dec-byte) data-pointer (inc instruction-pointer))
+            (recur (dec-byte (data data-pointer)) data-pointer (inc instruction-pointer))
+          (= symbol \.)
+            (do
+              ;(println (nth data data-pointer))
+              (println (char (data data-pointer)))
+              (recur data data-pointer (inc instruction-pointer)))
+          (= symbol \[)
+            (if (= (data data-pointer) 0)
+              (recur data data-pointer (inc (matchings instruction-pointer)))
+              (recur data data-pointer (inc instruction-pointer)))
+          (= symbol \])
+            (if (not= (data data-pointer) 0)
+              (recur data data-pointer (inc (matchings instruction-pointer)))
+              (recur data data-pointer (inc instruction-pointer)))
+
           ;; we are providing the input case for you
           (or (= symbol \,) (= symbol \*))
             ;; accept one byte of input, storing its value in the byte at the data pointer. 
